@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Speedo</string>
+    <string name="wireless">Wireless network connectivity</string>
+    <string name="cellular">Cellular network connectivity</string>
+    <string name="enable_disable">Shows or hides the notification icon</string>
+    <string name="enable_switch">Enabled</string>
+    <string name="lockscreen_summary">Show the notification in the lockscreen when the phone is locked</string>
+    <string name="lockscreen_title">Publicly visible</string>
+    <string name="color_summary">Background color of the notification icon</string>
+    <string name="color_title">Color</string>
+</resources>
