@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">Speedo</string>
+    <string name="app_name">Gasflow</string>
     <string name="wireless">Wireless network connectivity</string>
     <string name="cellular">Cellular network connectivity</string>
     <string name="enable_disable">Shows or hides the notification icon</string>
