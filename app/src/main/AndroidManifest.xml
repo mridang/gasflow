@@ -38,6 +38,21 @@
                 <data android:scheme="package"/>
             </intent-filter>
         </receiver>
+        <receiver
+            android:name=".PowerReceiver"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.os.action.POWER_SAVE_MODE_CHANGED" />
+            </intent-filter>
+        </receiver>
+        <receiver
+            android:name=".BatteryReceiver"
+            android:enabled="true">
+            <intent-filter>
+                <action android:name="android.intent.action.BATTERY_LOW" />
+                <action android:name="android.intent.action.BATTERY_OKAY" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>

@@ -10,6 +10,11 @@
         android:key="lockscreen"
         android:summary="@string/lockscreen_summary"
         android:title="@string/lockscreen_title"/>
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="lowpower"
+        android:summary="@string/lowpower_summary"
+        android:title="@string/lowpower_title"/>
     <com.mridang.colorpicker.ColorPreference
         android:defaultValue="@android:color/transparent"
         android:key="color"
