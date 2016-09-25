@@ -10,6 +10,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -100,6 +102,7 @@ public class TrafficService extends Service {
         notBuilder.setOnlyAlertOnce(true);
         notBuilder.setPriority(Integer.MAX_VALUE);
         notBuilder.setCategory(NotificationCompat.CATEGORY_SERVICE);
+        notBuilder.setLocalOnly(true);
         setColor(settings.getInt("color", Color.TRANSPARENT));
         visibilityPublic(settings.getBoolean("lockscreen", true));
 
@@ -333,20 +336,28 @@ public class TrafficService extends Service {
 
                 if (lngSpeed < 1024) {
                     TrafficService.notBuilder.setSmallIcon(R.drawable.wkb000);
+                    updateIcon(R.drawable.wkb000);
                 } else if (lngSpeed < 1048576L) {
 
                     TrafficService.notBuilder.setSmallIcon(R.drawable.wkb000 + (int) (lngSpeed / 1024L));
+                    updateIcon(R.drawable.wkb000 + (int) (lngSpeed / 1024L));
                     if (lngSpeed > 1022976) {
                         TrafficService.notBuilder.setSmallIcon(R.drawable.wkb000 + 1000);
+                        updateIcon(R.drawable.wkb000 + 1000);
                     }
                 } else if (lngSpeed <= 10485760) {
                     TrafficService.notBuilder.setSmallIcon(990 + R.drawable.wkb000
                             + (int) (0.5D + (double) (10F * ((float) lngSpeed / 1048576F))));
+                    updateIcon(990 + R.drawable.wkb000
+                            + (int) (0.5D + (double) (10F * ((float) lngSpeed / 1048576F))));
                 } else if (lngSpeed <= 103809024) {
                     TrafficService.notBuilder.setSmallIcon(1080 + R.drawable.wkb000
                             + (int) (0.5D + (double) ((float) lngSpeed / 1048576F)));
+                    updateIcon(1080 + R.drawable.wkb000
+                            + (int) (0.5D + (double) ((float) lngSpeed / 1048576F)));
                 } else {
                     TrafficService.notBuilder.setSmallIcon(1180 + R.drawable.wkb000);
+                    updateIcon(1180 + R.drawable.wkb000);
                 }
 
                 Long lngTotal = TrafficStats.getTotalRxBytes() + TrafficStats.getTotalTxBytes();
@@ -356,6 +367,14 @@ public class TrafficService extends Service {
             } catch (Exception e) {
                 Log.e("NotificationHandler", "Error creating notification for speed " + lngSpeed);
             }
+        }
+
+        private void updateIcon(int value) {
+            if(Build.VERSION.SDK_INT != Build.VERSION_CODES.N) {
+                return;
+            }
+            Bitmap bmpIcon = BitmapFactory.decodeResource(this.ctxContext.getResources(), value);
+            TrafficService.notBuilder.setLargeIcon(bmpIcon);
         }
     }
 
