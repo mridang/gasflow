@@ -328,49 +328,75 @@ public class TrafficService extends Service {
 
             TrafficService.hndNotifier.sendEmptyMessageDelayed(1, 1000L);
 
-            long lngCurrent = TrafficStats.getTotalRxBytes() + TrafficStats.getTotalTxBytes();
-            int lngSpeed = (int) (lngCurrent - lngPrevious);
+            long mStartRX = TrafficStats.getTotalRxBytes();
+            long mStartTX = TrafficStats.getTotalTxBytes();
+
+            if (mStartRX == TrafficStats.UNSUPPORTED || mStartTX == TrafficStats.UNSUPPORTED) {
+                Log.e("NotificationHandler", "Device does not support traffic stat monitoring");
+                return;
+            }
+
+            long lngCurrent = mStartRX + mStartTX;
+            int lngSpeedKb = (int) (lngCurrent - lngPrevious) / 1024;
             lngPrevious = lngCurrent;
 
+            Log.d("NotificationHandler", "Current Speed: " + lngSpeedKb);
+
             try {
-
-                if (lngSpeed < 1024) {
-                    TrafficService.notBuilder.setSmallIcon(R.drawable.wkb000);
+                if (lngSpeedKb < 0) {
                     updateIcon(R.drawable.wkb000);
-                } else if (lngSpeed < 1048576L) {
-
-                    TrafficService.notBuilder.setSmallIcon(R.drawable.wkb000 + (int) (lngSpeed / 1024L));
-                    updateIcon(R.drawable.wkb000 + (int) (lngSpeed / 1024L));
-                    if (lngSpeed > 1022976) {
-                        TrafficService.notBuilder.setSmallIcon(R.drawable.wkb000 + 1000);
-                        updateIcon(R.drawable.wkb000 + 1000);
+                } else if (lngSpeedKb < 1024) {
+                    // we only get images until 999, so display 1.0 Mb if > 999
+                    if (lngSpeedKb > 999) {
+                        updateIcon(R.drawable.wmb010);
                     }
-                } else if (lngSpeed <= 10485760) {
-                    TrafficService.notBuilder.setSmallIcon(990 + R.drawable.wkb000
-                            + (int) (0.5D + (double) (10F * ((float) lngSpeed / 1048576F))));
-                    updateIcon(990 + R.drawable.wkb000
-                            + (int) (0.5D + (double) (10F * ((float) lngSpeed / 1048576F))));
-                } else if (lngSpeed <= 103809024) {
-                    TrafficService.notBuilder.setSmallIcon(1080 + R.drawable.wkb000
-                            + (int) (0.5D + (double) ((float) lngSpeed / 1048576F)));
-                    updateIcon(1080 + R.drawable.wkb000
-                            + (int) (0.5D + (double) ((float) lngSpeed / 1048576F)));
+                    else {
+                        updateIcon(R.drawable.wkb000 + lngSpeedKb);
+                    }
                 } else {
-                    TrafficService.notBuilder.setSmallIcon(1180 + R.drawable.wkb000);
-                    updateIcon(1180 + R.drawable.wkb000);
+                    float lngSpeedMb = lngSpeedKb / 1024F;
+                    // 1        => wmb010
+                    // 1.22     => wmb012
+                    // 2.42     => wmb024
+                    // 10.54    => wmb100
+                    // 14.45    => wmb104
+                    // 19       => wmb109
+                    // 20       => wmb110
+                    // 21       => wmb111
+                    // 22       => wmb112
+                    // 44.45    => wmb134
+                    //Log.d("NotificationHandler", "lngSpeedMb: " + lngSpeedMb);
+
+                    // Note: we need to remove 10 to get the corresponding image name with the exact ressource
+                    if (lngSpeedMb < 10) {
+                        //Log.d("NotificationHandler", "finalA: " + "wmb0" + (int)Math.round(lngSpeedMb * 100f) / 10f);
+                        updateIcon(R.drawable.wmb010 + (int)(Math.round(lngSpeedMb * 100f) / 10f) - 10);
+                    }
+                    else if (lngSpeedMb > 99) {
+                        updateIcon(R.drawable.wmb190);
+                    }
+                    else {
+                        int imageName = ((Math.round(lngSpeedMb)) + 90);
+                        //Log.d("NotificationHandler", "finalB1: " + "wmb" + imageName);
+                        updateIcon(R.drawable.wmb010 + imageName - 10);
+                    }
                 }
 
-                Long lngTotal = TrafficStats.getTotalRxBytes() + TrafficStats.getTotalTxBytes();
+                Long lngTotal = mStartRX + mStartTX;
                 String strTotal = Formatter.formatFileSize(this.ctxContext, lngTotal);
                 TrafficService.notBuilder.setContentInfo(strTotal);
                 TrafficService.mgrNotifications.notify(ID, TrafficService.notBuilder.build());
             } catch (Exception e) {
-                Log.e("NotificationHandler", "Error creating notification for speed " + lngSpeed);
+                Log.e("NotificationHandler", "Error creating notification for speed " + lngSpeedKb);
             }
         }
 
         private void updateIcon(int value) {
-            if(Build.VERSION.SDK_INT != Build.VERSION_CODES.N) {
+            //Log.d("NotificationHandler", "IMAGE: " + (value - R.drawable.wkb000));
+
+            TrafficService.notBuilder.setSmallIcon(value);
+
+            if (Build.VERSION.SDK_INT != Build.VERSION_CODES.N) {
                 return;
             }
             Bitmap bmpIcon = BitmapFactory.decodeResource(this.ctxContext.getResources(), value);
